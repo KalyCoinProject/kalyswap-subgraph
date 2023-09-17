@@ -1,0 +1,25 @@
+{
+  "name": "exchange",
+  "version": "0.0.1",
+  "repository": "https://github.com/kalycoinproject/kalyswap-subgraph",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "codegen": "graph codegen --output-dir src/types/",
+    "build": "graph build",
+    "create-local": "graph create kalyswap/kalyswap --node http://127.0.0.1:8020",
+    "deploy-local": "graph deploy kalyswap/kalyswap --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
+    "deploy": "graph deploy kalyswap/kalyswap --ipfs https://graph.kalychain.io/ipfs/ --node https://graph.kalychain.io/deploy/ --debug",
+    "deploy-staging": "graph deploy $THE_GRAPH_GITHUB_USER/$THE_GRAPH_SUBGRAPH_NAME /kalyswap --ipfs https://graph.kalychain.io/ipfs/ --node https://graph.kalychain.io/deploy/",
+    "watch-local": "graph deploy graphprotocol/kalyswap --watch --debug --node http://127.0.0.1:8020/ --ipfs http://localhost:5001"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "0.16.2",
+    "@graphprotocol/graph-ts": "0.16.0",
+    "@typescript-eslint/eslint-plugin": "2.34.0",
+    "@typescript-eslint/parser": "2.34.0",
+    "eslint": "6.8.0",
+    "eslint-config-prettier": "6.15.0",
+    "prettier": "1.19.1",
+    "typescript": "^3.5.2"
+  }
+}

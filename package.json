@@ -1,0 +1,25 @@
+{
+  "name": "@kalycoinproject/kalyswap-subgraph",
+  "private": true,
+  "version": "1.0.0",
+  "repository": "https://github.com/kalycoinproject/kalyswap-subgraph",
+  "license": "GPL-3.0-or-later",
+  "workspaces": {
+    "subgraphs": [
+      "subgraphs/*"
+    ],
+    "nohoist": [
+      "**"
+    ]
+  },
+  "scripts": {
+    "build": "yarn workspaces run build",
+    "codegen": "yarn workspaces run codegen",
+    "create-local": "yarn workspaces run create-local",
+    "deploy-local": "yarn workspaces run deploy-local",
+    "deploy": "yarn workspaces run deploy",
+    "deploy-staging": "yarn workspaces run deploy-staging",
+    "watch-local": "yarn workspaces run watch-local"
+  },
+  "devDependencies": {}
+}
