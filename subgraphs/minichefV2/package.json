@@ -5,17 +5,17 @@
   "license": "GPL-3.0-or-later",
   "scripts": {
     "codegen": "graph codegen",
-    "create-local": "graph create kalyswap/minichef-dummy --node http://127.0.0.1:8020 --access-token $GRAPH_ACCESS_TOKEN",
-    "remove-local": "graph remove kalyswap/minichef-dummy --node http://127.0.0.1:8020 --access-token $GRAPH_ACCESS_TOKEN",
-    "deploy-local": "graph deploy kalyswap/minichef-dummy --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020 --access-token $GRAPH_ACCESS_TOKEN",
+    "create-local": "graph create kalyswap/minichef-dummy --node http://127.0.0.1:8020",
+    "remove-local": "graph remove kalyswap/minichef-dummy --node http://127.0.0.1:8020",
+    "deploy-local": "graph deploy kalyswap/minichef-dummy --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
     "build": "graph build",
     "auth": "graph auth https://graph.kalychain.io/deploy/ $GRAPH_ACCESS_TOKEN",
     "deploy": "graph deploy kalycoinproject/minichefv2 --ipfs https://graph.kalychain.io/ipfs/ --node https://graph.kalychain.io/deploy/ --debug --access-token $GRAPH_ACCESS_TOKEN",
     "deploy-staging": "graph deploy kalyswap/minichefv2-dummy --ipfs https://graph.kalychain.io/ipfs/ --node https://graph.kalychain.io/deploy/ --debug --access-token $GRAPH_ACCESS_TOKEN"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "0.16.2",
-    "@graphprotocol/graph-ts": "0.16.0",
+    "@graphprotocol/graph-cli": "0.58.0",
+    "@graphprotocol/graph-ts": "0.31.0",
     "@typescript-eslint/eslint-plugin": "2.34.0",
     "@typescript-eslint/parser": "2.34.0",
     "eslint": "6.8.0",

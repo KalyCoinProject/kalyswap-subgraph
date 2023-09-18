@@ -6,14 +6,14 @@
   "scripts": {
     "codegen": "graph codegen --output-dir src/types/",
     "build": "graph build",
-    "create-local": "graph create kalyswap/governance-dummy --node http://127.0.0.1:8020",
-    "deploy-local": "graph deploy kalyswap/governance-dummy --debug --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
+    "create-local": "graph create kalyswap/governance --node http://127.0.0.1:8020",
+    "deploy-local": "graph deploy kalyswap/governance --ipfs http://localhost:5001 --node http://127.0.0.1:8020",
     "deploy": "graph deploy --product hosted-service kalyswap/governance",
     "deploy-staging": "graph deploy $THE_GRAPH_GITHUB_USER/$THE_GRAPH_SUBGRAPH_NAME /kalyswap --ipfs https://graph.kalychain.io/ipfs/ --node https://graph.kalychain.io/deploy/",
     "watch-local": "graph deploy graphprotocol/kalyswap --watch --debug --node http://127.0.0.1:8020/ --ipfs http://localhost:5001"
   },
   "devDependencies": {
-    "@graphprotocol/graph-cli": "0.29.0",
-    "@graphprotocol/graph-ts": "0.26.0"
+    "@graphprotocol/graph-cli": "0.58.0",
+    "@graphprotocol/graph-ts": "0.31.0"
   }
 }

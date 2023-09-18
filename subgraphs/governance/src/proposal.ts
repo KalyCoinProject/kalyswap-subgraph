@@ -1,4 +1,6 @@
-/* eslint-disable prefer-const */
+import { Bytes } from "@graphprotocol/graph-ts";
+import { BI_0 } from "./constants";
+import { Proposal } from "./types/schema";
 import {
   ProposalCreated,
   ProposalCanceled,
@@ -6,75 +8,56 @@ import {
   VoteCast,
   ProposalQueued,
 } from "./types/Governance/Governance";
-import { Bytes, log } from "@graphprotocol/graph-ts";
-import { Proposal } from "./types/schema";
 
 export function handleNewProposal(event: ProposalCreated): void {
-  log.info("PROPPOSAL CREATED" + event.params.id.toString(), []);
+  const proposal = new Proposal(event.params.id.toString());
 
-  let proposal = new Proposal(event.params.id.toString());
-  proposal.description = event.params.description;
   proposal.proposer = event.params.proposer;
 
   // @ts-ignore
   proposal.targets = changetype<Array<Bytes>>(event.params.targets);
+  proposal.values = event.params.values;
+  proposal.signatures = event.params.signatures;
+  proposal.calldatas = event.params.calldatas;
 
   proposal.startTime = event.params.startTime;
   proposal.endTime = event.params.endTime;
-  proposal.signatures = event.params.signatures;
-  proposal.calldatas = event.params.calldatas;
+
+  proposal.forVotes = BI_0;
+  proposal.againstVotes = BI_0;
+
+  proposal.canceled = false;
+  proposal.executed = false;
+
+  proposal.description = event.params.description;
 
   proposal.save();
 }
 
 export function handleUpdatedProposalCanceled(event: ProposalCanceled): void {
-  log.info("PROPPOSAL Canceled" + event.params.id.toString(), []);
-
-  let id = event.params.id.toString();
-  let proposal = Proposal.load(id);
-  if (proposal !== null) {
-    proposal.canceled = true;
-    proposal.save();
-  }
+  const proposal = Proposal.load(event.params.id.toString())!;
+  proposal.canceled = true;
+  proposal.save();
 }
 
 export function handleUpdatedProposalExecuted(event: ProposalExecuted): void {
-  log.info("PROPPOSAL Executed" + event.params.id.toString(), []);
-
-  let id = event.params.id.toString();
-  let proposal = Proposal.load(id);
-  if (proposal !== null) {
-    proposal.executed = true;
-    proposal.save();
-  }
+  const proposal = Proposal.load(event.params.id.toString())!;
+  proposal.executed = true;
+  proposal.save();
 }
 
 export function handleVoteCast(event: VoteCast): void {
-  log.info("PROPPOSAL VoteCast" + event.params.proposalId.toString(), []);
-
-  let id = event.params.proposalId.toString();
-  let proposal = Proposal.load(id);
-  if (proposal !== null) {
-    if (event.params.support) {
-      proposal.forVotes = proposal.forVotes.plus(event.params.votes);
-    } else {
-      proposal.againstVotes = proposal.againstVotes.plus(event.params.votes);
-    }
-
-    proposal.save();
+  const proposal = Proposal.load(event.params.proposalId.toString())!;
+  if (event.params.support) {
+    proposal.forVotes = proposal.forVotes.plus(event.params.votes);
+  } else {
+    proposal.againstVotes = proposal.againstVotes.plus(event.params.votes);
   }
+  proposal.save();
 }
 
 export function handleProposalQueued(event: ProposalQueued): void {
-  log.info("PROPPOSAL VoteCast" + event.params.id.toString(), []);
-
-  let id = event.params.id.toString();
-  let proposal = Proposal.load(id);
-  if (proposal !== null) {
-    if (event.params.eta) {
-      proposal.eta = event.params.eta;
-    }
-
-    proposal.save();
-  }
+  const proposal = Proposal.load(event.params.id.toString())!;
+  proposal.eta = event.params.eta;
+  proposal.save();
 }

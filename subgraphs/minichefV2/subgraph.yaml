@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 description: KalySwap is a decentralized exchange for swapping assets on KalyChain.
 repository: https://github.com/kalycoinproject/kalyswap-subgraph
 schema:
@@ -13,12 +13,13 @@ dataSources:
       startBlock: 6880688
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./mappings/factory.ts
       entities:
         - Pair
         - Token
+        - PairLookup
       abis:
         - name: Factory
           file: ../../abis/factory.json
@@ -40,7 +41,7 @@ dataSources:
       startBlock: 6881112
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./mappings/miniChefV2.ts
       entities:
@@ -51,6 +52,14 @@ dataSources:
           file: ../../abis/MiniChefV2.json
         - name: RewarderViaMultiplier
           file: ../../abis/RewarderViaMultiplier.json
+        - name: Factory
+          file: ../../abis/factory.json
+        - name: ERC20
+          file: ../../abis/ERC20.json
+        - name: ERC20SymbolBytes
+          file: ../../abis/ERC20SymbolBytes.json
+        - name: ERC20NameBytes
+          file: ../../abis/ERC20NameBytes.json
       eventHandlers:
         - event: PoolAdded(indexed uint256,uint256,indexed address,indexed address)
           handler: handlePoolAdded
@@ -74,7 +83,7 @@ templates:
       abi: Pair
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./mappings/core.ts
       entities:
@@ -86,6 +95,12 @@ templates:
         - name: Factory
           file: ../../abis/factory.json
       eventHandlers:
+        - event: Mint(indexed address,uint256,uint256)
+          handler: handleMint
+        - event: Burn(indexed address,uint256,uint256,indexed address)
+          handler: handleBurn
+        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+          handler: handleSwap
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
         - event: Sync(uint112,uint112)

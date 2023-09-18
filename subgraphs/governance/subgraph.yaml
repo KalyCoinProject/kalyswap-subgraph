@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.4
 description: KalySwap is a decentralized exchange for swapping assets on KalyChain.
 repository: https://github.com/kalycoinproject/kalyswap-subgraph
 schema:
@@ -6,14 +6,14 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: Governance
-    network: kalychain
+    network: kaly
     source:
       startBlock: 6880965
       address: "0x567371A8D2B4456061abBaf4aE4d5756e74e9458"
       abi: Governance
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.5
+      apiVersion: 0.0.6
       language: wasm/assemblyscript
       file: ./src/proposal.ts
       entities:

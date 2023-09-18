@@ -7,14 +7,14 @@ type KalyswapFactory @entity {
 
   # total volume
   totalVolumeUSD: BigDecimal!
-  totalVolumeETH: BigDecimal!
+  totalVolumeKLC: BigDecimal!
 
   # untracked values - less confident USD scores
   untrackedVolumeUSD: BigDecimal!
 
   # total liquidity
   totalLiquidityUSD: BigDecimal!
-  totalLiquidityETH: BigDecimal!
+  totalLiquidityKLC: BigDecimal!
 
   # transactions
   txCount: BigInt!
@@ -29,16 +29,25 @@ type Token @entity {
   name: String!
   decimals: BigInt!
 
-  # used for other stats like marketcap
-  totalSupply: BigInt!
+  # token specific volume
+  tradeVolume: BigDecimal!
+  tradeVolumeUSD: BigDecimal!
+  untrackedVolumeUSD: BigDecimal!
+
+  # transactions across all pairs
+  txCount: BigInt!
 
   # liquidity across all pairs
   totalLiquidity: BigDecimal!
 
   # derived prices
-  derivedETH: BigDecimal!
+  derivedKLC: BigDecimal!
   derivedUSD: BigDecimal!
 
+  # derived fields
+  tokenDayData: [TokenDayData!]! @derivedFrom(field: "token")
+  pairDayDataBase: [PairDayData!]! @derivedFrom(field: "token0")
+  pairDayDataQuote: [PairDayData!]! @derivedFrom(field: "token1")
   pairBase: [Pair!]! @derivedFrom(field: "token0")
   pairQuote: [Pair!]! @derivedFrom(field: "token1")
 }
@@ -52,46 +61,239 @@ type Pair @entity {
   token1: Token!
   reserve0: BigDecimal!
   reserve1: BigDecimal!
-  totalSupply: BigDecimal!
+  totalSupply: BigInt!
 
   # derived liquidity
-  reserveETH: BigDecimal!
+  reserveKLC: BigDecimal!
   reserveUSD: BigDecimal!
-  trackedReserveETH: BigDecimal! # used for separating per pair reserves and global
-  trackedReserveUSD: BigDecimal! # used for separating per pair reserves and global
+  trackedReserveKLC: BigDecimal! # used for separating per pair reserves and global
   # Price in terms of the asset pair
   token0Price: BigDecimal!
   token1Price: BigDecimal!
+
+  # lifetime volume stats
+  volumeToken0: BigDecimal!
+  volumeToken1: BigDecimal!
+  volumeUSD: BigDecimal!
+  untrackedVolumeUSD: BigDecimal!
+  txCount: BigInt!
 
   # creation stats
   createdAtTimestamp: BigInt!
   createdAtBlockNumber: BigInt!
 
-  # Fields used to help derived relationship
-  liquidityProviderCount: BigInt! # used to detect new exchanges
+  # derived fields
+  pairHourData: [PairHourData!]! @derivedFrom(field: "pair")
+
+  mints: [Mint!]! @derivedFrom(field: "pair")
+  burns: [Burn!]! @derivedFrom(field: "pair")
+  swaps: [Swap!]! @derivedFrom(field: "pair")
 }
 
-type PairCache @entity {
+type PairLookup @entity {
+  # token0Address + "-" + token1Address
   id: ID!
-  pair: Pair!
+  pairAddress: Bytes!
 }
 
+type Transaction @entity {
+  id: ID! # txn hash
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  # This is not the reverse of Mint.transaction; it is only used to
+  # track incomplete mints (similar for burns and swaps)
+  mints: [Mint!]!
+  burns: [Burn!]!
+  swaps: [Swap!]!
+}
+
+type Mint @entity {
+  # transaction hash + "-" + index in mints Transaction array
+  id: ID!
+  transaction: Transaction!
+  timestamp: BigInt! # need this to pull recent txns for specific token or pair
+  pair: Pair!
+
+  # populated from the primary LogicalMint event
+  to: Bytes!
+  liquidity: BigInt!
+
+  # populated from the Mint event
+  sender: Bytes
+  amount0: BigDecimal
+  amount1: BigDecimal
+  logIndex: BigInt
+  # derived amount based on available prices of tokens
+  amountUSD: BigDecimal
+
+  # optional fee fields, if a LogicalMint event is fired in _mintFee
+  feeTo: Bytes
+  feeLiquidity: BigInt
+}
+
+type Burn @entity {
+  # transaction hash + "-" + index in mints Transaction array
+  id: ID!
+  transaction: Transaction!
+  timestamp: BigInt! # need this to pull recent txns for specific token or pair
+  pair: Pair!
+
+  # populated from the primary LogicalBurn event
+  liquidity: BigInt!
+
+  # populated from the Burn event
+  sender: Bytes
+  amount0: BigDecimal
+  amount1: BigDecimal
+  logIndex: BigInt
+  # derived amount based on available prices of tokens
+  amountUSD: BigDecimal
+
+  # optional fee fields, if a LogicalMint event is fired in _mintFee
+  feeTo: Bytes
+  feeLiquidity: BigInt
+
+  to: Bytes
+  # mark uncomplete in KLC case
+  needsComplete: Boolean!
+}
+
+type Swap @entity {
+  # transaction hash + "-" + index in swaps Transaction array
+  id: ID!
+  transaction: Transaction!
+  timestamp: BigInt! # need this to pull recent txns for specific token or pair
+  pair: Pair!
+
+  # populated from the Swap event
+  sender: Bytes!
+  from: Bytes! # the EOA that initiated the txn
+  amount0In: BigDecimal!
+  amount1In: BigDecimal!
+  amount0Out: BigDecimal!
+  amount1Out: BigDecimal!
+  to: Bytes!
+  logIndex: BigInt
+
+  # derived info
+  amountUSD: BigDecimal!
+}
+
+# Data accumulated and condensed into day stats for all of Kalyswap
+type KalyswapDayData @entity {
+  id: ID! # timestamp rounded to current day by dividing by 86400
+  date: Int!
+
+  dailyVolumeKLC: BigDecimal!
+  dailyVolumeUSD: BigDecimal!
+  dailyVolumeUntracked: BigDecimal!
+
+  totalVolumeKLC: BigDecimal!
+  totalLiquidityKLC: BigDecimal!
+  totalVolumeUSD: BigDecimal! # Accumulate at each trade, not just calculated off whatever totalVolume is. making it more accurate as it is a live conversion
+  totalLiquidityUSD: BigDecimal!
+
+  txCount: BigInt!
+}
+
+type PairHourData @entity {
+  id: ID!
+  hourStartUnix: Int! # unix timestamp for start of hour
+  pair: Pair!
+
+  # reserves
+  reserve0: BigDecimal!
+  reserve1: BigDecimal!
+
+  # derived liquidity
+  reserveUSD: BigDecimal!
+
+  # volume stats
+  hourlyVolumeToken0: BigDecimal!
+  hourlyVolumeToken1: BigDecimal!
+  hourlyVolumeUSD: BigDecimal!
+  hourlyTxns: BigInt!
+}
+
+# Data accumulated and condensed into day stats for each exchange
+type PairDayData @entity {
+  id: ID!
+  date: Int!
+  pairAddress: Bytes!
+  token0: Token!
+  token1: Token!
+
+  # reserves
+  reserve0: BigDecimal!
+  reserve1: BigDecimal!
+
+  # total supply for LP historical returns
+  totalSupply: BigInt!
+
+  # derived liquidity
+  reserveUSD: BigDecimal!
+
+  # volume stats
+  dailyVolumeToken0: BigDecimal!
+  dailyVolumeToken1: BigDecimal!
+  dailyVolumeUSD: BigDecimal!
+  dailyTxns: BigInt!
+}
+
+type TokenDayData @entity {
+  id: ID!
+  date: Int!
+  token: Token!
+
+  # volume stats
+  dailyVolumeToken: BigDecimal!
+  dailyVolumeKLC: BigDecimal!
+  dailyVolumeUSD: BigDecimal!
+  dailyTxns: BigInt!
+
+  # liquidity stats
+  totalLiquidityToken: BigDecimal!
+  totalLiquidityKLC: BigDecimal!
+  totalLiquidityUSD: BigDecimal!
+
+  # price stats
+  priceUSD: BigDecimal!
+}
+
+type Bundle @entity {
+  id: ID!
+  klcPrice: BigDecimal! # price of KLC usd
+}
+
+type Minichef @entity {
+  id: ID!
+  totalAllocPoint: BigInt!
+  rewardPerSecond: BigInt!
+  rewardsExpiration: BigInt!
+  farms: [Farm!]! @derivedFrom(field: "minichef")
+}
 type Farm @entity {
   id: ID!
   chefAddress: Bytes!
   pid: BigInt!
   pairAddress: Bytes!
-  pair: Pair!
-  rewarderAddress: Bytes
-  tvl: BigDecimal
+  pair: Pair
+  rewarderAddress: Bytes!
+  balance: BigInt!
   allocPoint: BigInt!
   rewarder: FarmRewarder!
   minichef: Minichef!
-
-  # derived fields
   farmingPositions: [FarmingPosition!]! @derivedFrom(field: "farm")
 }
-
+type FarmingPosition @entity {
+  id: ID!
+  userAddress: Bytes!
+  user: User!
+  farm: Farm!
+  pairAddress: Bytes!
+  pair: Pair!
+  stakedTokenBalance: BigInt!
+}
 type FarmRewarder @entity {
   id: ID!
   farm: Farm!
@@ -102,35 +304,10 @@ type FarmReward @entity {
   id: ID!
   rewarder: FarmRewarder
   token: Token!
-  multiplier: BigInt
+  multiplier: BigInt!
 }
-
-type Minichef @entity {
-  id: ID!
-  totalAllocPoint: BigInt
-  rewardPerSecond: BigInt
-  rewardsExpiration: BigInt
-  farms: [Farm!]! @derivedFrom(field: "minichef")
-}
-
 type User @entity {
   id: ID!
   farmingPositions: [FarmingPosition!] @derivedFrom(field: "user")
   usdSwapped: BigDecimal!
-}
-
-type FarmingPosition @entity {
-  id: ID!
-  userAddress: Bytes!
-  user: User!
-  farm: Farm!
-  pairAddress: Bytes!
-  pair: Pair!
-  stakedTokenBalance: BigDecimal!
-}
-
-# stores for USD calculations
-type Bundle @entity {
-  id: ID!
-  ethPrice: BigDecimal! # price of ETH usd
 }
