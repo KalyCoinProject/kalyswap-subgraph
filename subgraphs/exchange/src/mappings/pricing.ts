@@ -1,6 +1,6 @@
 /* eslint-disable prefer-const */
 import {BigDecimal} from '@graphprotocol/graph-ts'
-import {Pair, Token, Bundle, PairLookup} from '../generated/schema'
+import {Pair, Token, Bundle, PairLookup} from '../types/schema'
 import {WKLC_ADDRESS} from './helpers'
 import {ADDRESS_ZERO, BD_0, BD_1, BD_2} from './constants'
 

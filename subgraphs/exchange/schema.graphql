@@ -44,7 +44,8 @@ type Token @entity {
   totalLiquidity: BigDecimal!
 
   # derived prices
-  derivedKLC: BigDecimal
+  derivedKLC: BigDecimal!
+  derivedUSD: BigDecimal!
 
   # derived fields
   tokenDayData: [TokenDayData!]! @derivedFrom(field: "token")
@@ -63,7 +64,7 @@ type Pair @entity {
   token1: Token!
   reserve0: BigDecimal!
   reserve1: BigDecimal!
-  totalSupply: BigDecimal!
+  totalSupply: BigInt!
 
   # derived liquidity
   reserveKLC: BigDecimal!
@@ -88,42 +89,15 @@ type Pair @entity {
   liquidityProviderCount: BigInt! # used to detect new exchanges
   # derived fields
   pairHourData: [PairHourData!]! @derivedFrom(field: "pair")
-  liquidityPositions: [LiquidityPosition!]! @derivedFrom(field: "pair")
-  liquidityPositionSnapshots: [LiquidityPositionSnapshot!]!
-    @derivedFrom(field: "pair")
   mints: [Mint!]! @derivedFrom(field: "pair")
   burns: [Burn!]! @derivedFrom(field: "pair")
   swaps: [Swap!]! @derivedFrom(field: "pair")
 }
 
-type User @entity {
+type PairLookup @entity {
+  # token0Address + "-" + token1Address
   id: ID!
-  liquidityPositions: [LiquidityPosition!] @derivedFrom(field: "user")
-  usdSwapped: BigDecimal!
-}
-
-type LiquidityPosition @entity {
-  id: ID!
-  user: User!
-  pair: Pair!
-  liquidityTokenBalance: BigDecimal!
-}
-
-# saved over time for return calculations, gets created and never updated
-type LiquidityPositionSnapshot @entity {
-  id: ID!
-  liquidityPosition: LiquidityPosition!
-  timestamp: Int! # saved for fast historical lookups
-  block: Int! # saved for fast historical lookups
-  user: User! # reference to user
-  pair: Pair! # reference to pair
-  token0PriceUSD: BigDecimal! # snapshot of token0 price
-  token1PriceUSD: BigDecimal! # snapshot of token1 price
-  reserve0: BigDecimal! # snapshot of pair token0 reserves
-  reserve1: BigDecimal! # snapshot of pair token1 reserves
-  reserveUSD: BigDecimal! # snapshot of pair reserves in USD
-  liquidityTokenTotalSupply: BigDecimal! # snapshot of pool token supply
-  liquidityTokenBalance: BigDecimal! # snapshot of users pool token balance
+  pairAddress: Bytes!
 }
 
 type Transaction @entity {
@@ -132,9 +106,9 @@ type Transaction @entity {
   timestamp: BigInt!
   # This is not the reverse of Mint.transaction; it is only used to
   # track incomplete mints (similar for burns and swaps)
-  mints: [Mint!]
-  burns: [Burn!]
-  swaps: [Swap!]
+  mints: [Mint!]!
+  burns: [Burn!]!
+  swaps: [Swap!]!
 }
 
 type Mint @entity {
@@ -146,7 +120,7 @@ type Mint @entity {
 
   # populated from the primary Transfer event
   to: Bytes!
-  liquidity: BigDecimal!
+  liquidity: BigInt!
 
   # populated from the Mint event
   sender: Bytes
@@ -158,7 +132,7 @@ type Mint @entity {
 
   # optional fee fields, if a Transfer event is fired in _mintFee
   feeTo: Bytes
-  feeLiquidity: BigDecimal
+  feeLiquidity: BigInt
 }
 
 type Burn @entity {
@@ -169,23 +143,24 @@ type Burn @entity {
   pair: Pair!
 
   # populated from the primary Transfer event
-  liquidity: BigDecimal!
+  liquidity: BigInt!
 
   # populated from the Burn event
   sender: Bytes
   amount0: BigDecimal
   amount1: BigDecimal
-  to: Bytes
   logIndex: BigInt
   # derived amount based on available prices of tokens
   amountUSD: BigDecimal
 
+  # optional fee fields, if a LogicalMint event is fired in _mintFee
+  feeTo: Bytes
+  feeLiquidity: BigInt
+
+  to: Bytes
   # mark uncomplete in KLC case
   needsComplete: Boolean!
 
-  # optional fee fields, if a Transfer event is fired in _mintFee
-  feeTo: Bytes
-  feeLiquidity: BigDecimal
 }
 
 type Swap @entity {
@@ -264,7 +239,7 @@ type PairDayData @entity {
   reserve1: BigDecimal!
 
   # total supply for LP historical returns
-  totalSupply: BigDecimal!
+  totalSupply: BigInt!
 
   # derived liquidity
   reserveUSD: BigDecimal!

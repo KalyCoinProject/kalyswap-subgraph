@@ -9,8 +9,8 @@ import {
     Burn as BurnEvent,
     Swap as SwapEvent,
     Bundle,
-} from '../generated/schema'
-import {Mint, Burn, Swap, Sync, Transfer} from '../generated/templates/Pair/Pair'
+} from '../types/schema'
+import {Mint, Burn, Swap, Sync, Transfer} from '../types/templates/Pair/Pair'
 import {updatePairDayData, updateTokenDayData, updateKalyswapDayData, updatePairHourData} from './dayUpdates'
 import {getKLCPriceInUSD, findKlcPerToken, getTrackedVolumeUSD, getTrackedLiquidityUSD} from './pricing'
 import {

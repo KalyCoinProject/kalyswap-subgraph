@@ -19,6 +19,7 @@ dataSources:
       entities:
         - Pair
         - Token
+        - PairLookup
       abis:
         - name: Factory
           file: ../../abis/factory.json

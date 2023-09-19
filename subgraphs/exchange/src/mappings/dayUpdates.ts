@@ -1,7 +1,7 @@
 /* eslint-disable prefer-const */
-import {Pair, PairHourData} from '../generated/schema'
+import {Pair, PairHourData} from '../types/schema'
 import {BigInt, BigDecimal, ethereum} from '@graphprotocol/graph-ts'
-import {Bundle, Token, KalyswapFactory, KalyswapDayData, PairDayData, TokenDayData} from '../generated/schema'
+import {Bundle, Token, KalyswapFactory, KalyswapDayData, PairDayData, TokenDayData} from '../types/schema'
 import {BI_1, BD_0, BI_0} from './constants'
 
 export function updateKalyswapDayData(event: ethereum.Event): KalyswapDayData {
