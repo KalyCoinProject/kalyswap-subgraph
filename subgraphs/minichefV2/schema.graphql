@@ -279,7 +279,7 @@ type Farm @entity {
   pairAddress: Bytes!
   pair: Pair
   rewarderAddress: Bytes!
-  balance: BigInt!
+  tvl: BigInt!
   allocPoint: BigInt!
   rewarder: FarmRewarder!
   minichef: Minichef!

@@ -25,6 +25,7 @@ import {
   _fetchTokenSymbol,
   _fetchTokenName,
   _fetchTokenDecimals,
+  convertTokenToDecimal,
 } from "./helpers";
 import { ADDRESS_ZERO, BD_0, BI_0, BI_1 } from "./constants";
 
@@ -66,7 +67,7 @@ export function handleDeposit(event: Deposit): void {
 
   let farm = Farm.load(farmKey)!;
 
-  farm.balance = farm.balance.plus(event.params.amount);
+  farm.tvl = farm.tvl.plus(event.params.amount);
 
   farm.save();
 
@@ -104,7 +105,7 @@ export function handleWithdraw(event: Withdraw): void {
 
   let farm = Farm.load(farmKey)!;
 
-  farm.balance = farm.balance.minus(event.params.amount);
+  farm.tvl = farm.tvl.minus(event.params.amount);
 
   farm.save();
 
@@ -142,7 +143,7 @@ export function handleEmergencyWithdraw(event: EmergencyWithdraw): void {
 
   let farm = Farm.load(farmKey)!;
 
-  farm.balance = farm.balance.minus(event.params.amount);
+  farm.tvl = farm.tvl.minus(event.params.amount);
 
   log.info(
     "handleEmergencyWithdraw==============createUser==event.params.to" +
@@ -283,7 +284,7 @@ function createFarm(
     farm.pid = pid;
     farm.pairAddress = pair;
     farm.rewarderAddress = rewarderAddress;
-    farm.balance = BI_0;
+    farm.tvl = BI_0;
     farm.allocPoint = allocPoint;
     farm.rewarder = rewarderId;
     farm.minichef = minichefKey;
