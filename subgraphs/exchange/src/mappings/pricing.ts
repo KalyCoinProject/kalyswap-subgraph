@@ -36,7 +36,7 @@ let WHITELIST: string[] = [
 ]
 
 // minimum liquidity for price to get tracked
-let MINIMUM_LIQUIDITY_THRESHOLD_KLC = BigDecimal.fromString('{{LiquidityThresholdKLC}}')
+let MINIMUM_LIQUIDITY_THRESHOLD_KLC = BigDecimal.fromString('1')
 
 /**
  * Search through graph to find derived Klc per token.

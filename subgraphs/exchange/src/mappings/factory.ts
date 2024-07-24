@@ -9,6 +9,7 @@ import {
   _fetchTokenDecimals
 } from './helpers'
 import {BD_0, BI_0} from './constants'
+import { BigInt } from "@graphprotocol/graph-ts"
 
 export function handleNewPair(event: PairCreated): void {
   // load factory (create if first exchange)
@@ -51,6 +52,7 @@ export function handleNewPair(event: PairCreated): void {
       token0.untrackedVolumeUSD = BD_0
       token0.totalLiquidity = BD_0
       token0.txCount = BI_0
+      token0.totalSupply = BigInt.fromI32(0) // Added this line
 
       token0.save()
   }
@@ -76,6 +78,7 @@ export function handleNewPair(event: PairCreated): void {
       token1.untrackedVolumeUSD = BD_0
       token1.totalLiquidity = BD_0
       token1.txCount = BI_0
+      token1.totalSupply = BigInt.fromI32(0) // Added this line
 
       token1.save()
   }
@@ -98,6 +101,7 @@ export function handleNewPair(event: PairCreated): void {
   pair.untrackedVolumeUSD = BD_0
   pair.token0Price = BD_0
   pair.token1Price = BD_0
+  pair.liquidityProviderCount = BigInt.fromI32(0)  
   pair.save()
 
   // create pair lookup and reverse lookup
